@@ -5,17 +5,21 @@
 #include <stdlib.h>
 #include <stdbool.h>
 
-
+// declares struct Product
 struct Product{
     char* name;
     double price;
 
 };
+
+// declares struct ProductStock
 struct ProductStock{
     struct Product product;
     int quantity;
 };
 
+
+// declares struct Customer
 struct Customer{
     char* uname;
     double custCash;
@@ -23,7 +27,7 @@ struct Customer{
     int index;
 };
 
-
+// declares struct Shop
 struct Shop{
     double cash;
     struct ProductStock stock[20];
@@ -34,216 +38,217 @@ struct Shop{
 
 
 
-void printProduct(struct Product p){
 
-    printf("PRODUCT NAME: %s \nPRODUCT PRICE: %.2f\n", p.name, p.price);
-    printf("------------------\n");
-}
-
-void printProduct2(struct Product p){
-
-    printf("PRODUCT NAME: %s \n", p.name);
-    
-
-    
-    printf("------------------\n");
-}
-// void printCustomer(struct Customer c){
-
-//     printf("CUSTOMER NAME: %s \nCUSTOMER BUDGET: %.2f\n", c.name, c.budget);
-//     printf("------------------\n");
-//     for(int i = 0; i < c.index; i++)
-//     {
-//         printProduct(c.shoppingList[i].product);
-//         printf("%s Orders %d of Above Product\n", c.name,c.shoppingList[i].quantity);
-//         double cost = c.shoppingList[i].quantity * c.shoppingList[i].product.price;
-//         printf("The cost to %s will be €%.2f\n", c.name, cost);
-//     }
-// }
-
+// function takes in the shops stock from a csv and stores shop cash, products , quantity and price
 struct Shop createAndStockShop()
 {
-   
+   // declares the variables need to open the csv file and iterate through each line
     FILE * fp;
     char * line = NULL;
     size_t len = 0;
     ssize_t read;
 
+//opens csv in read mode
     fp = fopen("stock.csv", "r");
+    // is the csv is empty exit
     if (fp == NULL)
         exit(EXIT_FAILURE);
 
-
+    // gets the cash from the first line of the csv
     getline(&line, &len, fp);
     double cashInShop = atof(line);
+    //puts the cash in to the shop struct
     struct Shop shop ={cashInShop};
 
+    //iterates through the rest of the lines in the csv and takes the name quantity and price from them
     while ((read = getline(&line, &len, fp)) != -1) {
-        // printf("Retrieved line of length %zu:\n", read);
-        // printf("%s is a line" , line);
+        //gets the product name 
         char *n = strtok(line, ",");
+        //gets product price 
         char *p = strtok(NULL, ",");
+        //gets product quantity
         char *q = strtok(NULL, ",");
+        //coverts quantity string to integer
         int quantity = atoi(q);
+        //converts price string to float
         double price = atof(p);
+        //declares memory allocation for name char
         char *name = malloc(sizeof(char) * 100);
+        // copys n to name string
         strcpy(name, n);
+        //declares structs within the shop and appends each product to the stock
         struct Product product ={ name, price};
         struct ProductStock stockItem = { product, quantity};
         shop.stock[shop.index++] = stockItem;
-        // printf("NAME OF PRODUCT %s PRICE %.2f Quantity %d\n", name, price, quantity);
+    
     }
-    // printProduct(shop.stock[0].product);
+
     return shop;
 }
 
 struct Customer fillShoppingList()
 {
-   
+   // declares the variables need to open the csv file and iterate through each line
     FILE * fp;
     char * line = NULL;
     size_t len = 0;
     ssize_t read;
 
+    //opens csv in read mode
     fp = fopen("shoplist.csv", "r");
+    // is the csv is empty exit
     if (fp == NULL)
         exit(EXIT_FAILURE);
 
     
 
-    
+    // gets the Budget and name from the first line of the csv
     getline(&line, &len, fp);
-    // // printf("%s is a line" , line);
+    //gets budget from the first line
     char *b = strtok(line, ",");
+    //gets name from the first line
     char *u = strtok(NULL, ",");
+    //converst budget string to float
     double custCash = atof(b);
+    //declares memomry allocation for username
     char *uname = malloc(sizeof(char) * 50);
+    // copys u to uname
     strcpy(uname, u);
-    // printf("%s\n",uname);
-    // printf("%.2f\n",custCash);
-    // char *user = malloc(sizeof(char) * 50);
+    //inputs uname and custcash into Customer user
     struct Customer user = {uname, custCash};
-    // return custCash;
 
+//iterates through the rest of the lines in the csv and takes the name and quantity
     while ((read = getline(&line, &len, fp)) != -1) {
-        // printf("Retrieved line of length %zu:\n", read);
-        // printf("%s is a line" , line);
+        //gets prodcut name from the csv
         char *n = strtok(line, ",");
+        //gets product quantity form the csv
         char *q = strtok(NULL, ",");
+        //converts quantity string to integer
         int quantity = atoi(q);
-
+        //declares memory allocation for product name
         char *name = malloc(sizeof(char) * 100);
+        //copys n string to name string
         strcpy(name, n);
+        //declares structs within the user and appends each product to the shoppingList
         struct Product product ={ name};
         struct ProductStock listItem = { product, quantity};
         user.shoppingList[user.index++] = listItem;
-        // struct Customer customer  ={ uname, custCash};
 
-        // printf("NAME OF PRODUCT %s PRICE %.2f ", uname, custCash);
     }
-//    struct Customer customer  ={ uname, custCash};
-//    printf("NAME OF PRODUCT %s PRICE %.2f ", uname, custCash);
+
     return user;
     
 }
 
-void printShop(struct Shop s)
-{
-    printf("Shop has %.2f in cash\n", s.cash);
-    for (int i = 0; i < s.index; i++)
-    {
-        struct Product product = s.stock[i].product;
-        printProduct(product);
-        printf("The Shop has %d of the above\n", s.stock[i].quantity);
-    }
-}
 
+//function to find product price from input char
 double findProductPrice(struct Shop *s, char *n)
 {
+    //iterates through all products in stock
     for (int i = 0; i < s->index; i++)
     {
+        // gets product name from the i position in stock
          struct Product product = s->stock[i].product;
          char *name =  product.name;
-        //   printf("%s \n", name);
+         //if the product name = in put name
          if(strcmp(name,n) == 0 )
          {
+             //return the porduct price
              return product.price;
          }
     }
-    return -1;
+    return 0;
 }
 
 
-
+// function that compares input shoppingList versues product stock
+// Takes input pointers from Customer and Shop
 void printShopList(struct Customer *c ,struct Shop *s)
 {
-
+    //prints customer name and budget
     printf("CUSTOMER NAME: %sCUSTOMER BUDGET: %.2f\n", c->uname, c->custCash);
     printf("------------------\n");
+    //declares float a to be used to calculate total spend
     float a =0.00;
     
-    int update[10];
+    // int update[10];
+
+    //nested for loops that compares the products in stock and shoppinglist
     for(int i = 0; i < c->index; i++)
     {
       for(int j = 0; j < s->index; j++)
       {
-
+            //if the product name appears in both stock and shopping list
             if(strcmp(c->shoppingList[i].product.name,s->stock[j].product.name)==0)
             {
+                //and if shopping list quantity <= stock quantity continue
                 if(c->shoppingList[i].quantity - s->stock[j].quantity <= 0 )
                 {
-                // printProduct2(c->shoppingList[i].product);
-                printf("PRODUCT NAME: %s\n", c->shoppingList[i].product.name);
-                // char *n = c.shoppingList[i].product.name;
-                double price = findProductPrice(s, c->shoppingList[i].product.name);
                 
+                //print product name
+                printf("PRODUCT NAME: %s\n", c->shoppingList[i].product.name);
+                //gets product price
+                double price = findProductPrice(s, c->shoppingList[i].product.name);
+                // makes total cost of product by multiplying price * qunatity
+                double cost = c->shoppingList[i].quantity * price;
+                //prints out product name, user name , price and cost
                 printf("%s Orders %d of Above Product\n", c->uname,c->shoppingList[i].quantity);
                 printf("PRODUCT PRICE: €%.2f\n", price);
-                double cost = c->shoppingList[i].quantity * price;
                 printf("The cost to %s will be €%.2f\n", c->uname, cost);
                 printf("------------------\n");
+                // adds cost to a to calculate total spend
                 a= a+cost;
-                update[i]= c->shoppingList[i].quantity;
+                // update[i]= c->shoppingList[i].quantity;
                 }
+                //error message for ordering more of an item than is in stcok
                 else
                 {
-                    update[i] = 0;
+                    // update[i] = 0;
                      printf("You have ordered %d of %s, only %d of this product left in stock please remove items from your shoppinglist\n",c->shoppingList[i].quantity,c->shoppingList[i].product.name,s->stock[j].quantity);
                 }
             }
     }
     }
+    //prints total cost
     printf("Total: €%.2f\n", a);
     printf("------------------\n");
 
-    // int k;
-    // for(k = 0; k < 10; k++)
-    //   printf("%d ", update[k]);
-    // printf("Update: %ls\n", update);
+    // declares newcash to for use in total spend
     float newCash;
+    //declares change variable calculates how much customer spent
     double change = c->custCash - a;
+    //if spend is less than budget continue
     if(change >= 0)
     {
+        //newcash = shop cash + total spend
         newCash = s->cash + a;
+        //print change
         printf("Change: €%.2f\n", change);
+        //print new shop cash
         printf("Shopcash: €%.2f\n", newCash);
             
+        // declares the variables need to open the csv file 
         FILE * fp;
         char * line = NULL;
         size_t len = 0;
         ssize_t read;
 
+        //open stock csv and ope in read and write mode
         fp = fopen("stock.csv", "r+");
+        //if empty close
         if (fp == NULL)
             exit(EXIT_FAILURE);
 
+        //overwrite first line with new shop cash
         fprintf(fp, "%.2f", newCash);
+        //close csv
         fclose(fp);
 
        
     
         
     }
+    // if total spend is more than budget display this error message
     else
     {
 
@@ -252,38 +257,125 @@ void printShopList(struct Customer *c ,struct Shop *s)
 }
 
 
+//function takes an input from the shop struct and a char
+void printInputList(struct Shop *s, char *pN )
+{
+
+   // declares int found for use as counter in for loop weather item was found or not
+    int found= 0;
+
+    // for loop that iterates through all items in shop
+    for(int i = 0; i < s->index; i++)
+    {
+        //compare weather the input product is = to a product name in the shops stock
+        if(strcmp(pN,s->stock[i].product.name)==0)
+        {
+            printf("%s\n",s->stock[i].product.name);
+            // found counter
+            found++;
+            int q = 0;
+            //take in quantity of the product the user inputs
+            printf("Please enter The quanitity you would like to purchase ?:");
+            scanf("%d", &q);
+            // if the quantity input is greater than or equal to the number of this item in stock continue
+            if(q <= s->stock[i].quantity)
+            {
+                // finds the price of the input item
+                double price = findProductPrice(s, s->stock[i].product.name);
+                // gets the cost by multyipling the quntity by the price
+                double cost = q * price;
+                // declares the char choice and the size that it can be
+                char* choice = (char*) malloc(10 * sizeof(char));
+                printf("The price for %d of Prouct:%s is €%.2f. Do you wish to confirm purchase?\nyes or no\n",q ,s->stock[i].product.name, cost);
+                // takes in the yes or no options for choice
+                scanf("%s", choice);
+                //if user chooses yes
+                if (strcmp(choice, "yes")==0)
+                {
+                    printf("Your order has been confirmed.\n Please shop here again\n");
+                    float newCash;
+    
+            
+                    {
+                       //newcash = shop cash + total spend
+                        newCash = s->cash + cost;
+                        //print new shop cash
+                        printf("Shopcash: €%.2f\n", newCash);
+                            
+                        // declares the variables need to open the csv file 
+                        FILE * fp;
+                        char * line = NULL;
+                        size_t len = 0;
+                        ssize_t read;
+
+                        //open stock csv and ope in read and write mode
+                        fp = fopen("stock.csv", "r+");
+                        //if empty close
+                        if (fp == NULL)
+                            exit(EXIT_FAILURE);
+
+                        //overwrite first line with new shop cash
+                        fprintf(fp, "%.2f", newCash);
+                        //close csv
+                        fclose(fp);
 
 
+       
+    
+        
+    }
+                }
+                //if user chooses no
+                else if (strcmp(choice, "no")==0)
+                {
+                    printf("Your order has been cancelled.\n Please shop here again\n");
+                }
+                //if user chooses something other than yes or no
+                else
+                {
+                    printf("Sorry entry not recognised transaction cancelled");
+                }
+            }
+            //error message for if the user chooses a quantity of the product that is more than what is in stock
+            else
+            {
+                  printf("You have choosen %d of the Product:%s. There is only %d of this product left in stock please reduce your order.\n",q,s->stock[i].product.name,s->stock[i].quantity);
+            }
+            
+
+            }
+            
+      }
+      // uses counter for weather a match is found for input name = to product name in stock an if it isnt it prints and error message
+     if(!found)    
+    {
+        printf("%s is not currently in stock please choose another item\n",pN);
+    }
+}
 
 int main(void)
 {
-    // struct Customer aidan = { "Aidan", 100.0};
     
-
-    // struct Product coke  = { "Can Coke", 1.10};
-    // struct Product bread  = { "Bread", .70};
-    // // printProduct(coke);
-    
-    // struct ProductStock cokeStock = {coke, 20};
-    // struct ProductStock breadStock = {bread, 2};
-
-    // aidan.shoppingList[aidan.index++] = cokeStock;
-    // aidan.shoppingList[aidan.index++] = breadStock;
-
-    // printCustomer(aidan);
-
+   
+    //calls the function and has it equal to Shop shop
     struct Shop shop = createAndStockShop();
 
-    // printShop(shop);
+   //calls the function and has it equal to Customer user
     struct Customer user =fillShoppingList();
     printShopList(&user, &shop);
-    // double price = findProductPrice(shop, ptr_Shop->stock[2].product.name);
-    // // printf("%.2f\n", price);
-    // printf("%s \n", customer.user.shoppingList[2].product.name);
-    
-    
-    // printf("%s", nm);
-    // printf("The shop has %d of the product %s\n",cokeStock.quantity, cokeStock.product.name);
 
+    
+    //declares char pName for the iinput of the product name for the live mode
+    char pName;
+    printf("Please enter a product name?");
+
+   //allows spaces to be taken in a scanf string takes in product name
+    scanf("%[^\n]s",&pName);
+
+
+    //calls the function and passes pointers to shop and pName
+    printInputList(&shop, &pName);
+
+    
     return 0;
 }
