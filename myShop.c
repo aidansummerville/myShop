@@ -86,7 +86,7 @@ struct Shop createAndStockShop()
 
     return shop;
 }
-
+//takes filepath variable which indicates the csv to read in for the customers shopping list
 struct Customer fillShoppingList(char *filepath)
 {
    // declares the variables need to open the csv file and iterate through each line
@@ -349,6 +349,7 @@ void printShopList(struct Customer *c ,struct Shop *s)
                 printf("------------------\n");
                 // adds cost to a to calculate total spend
                 a= a+cost;
+                //gets the updated quantity for that item in the shop and appends it to the updateQ int array
                 int qy = s->stock[j].quantity - c->shoppingList[i].quantity;
                 updateQ[j]= qy;
                 
@@ -591,7 +592,7 @@ int main(void)
     {
 
         //unrecognised command and goes back to the main menu
-        printf("Command unrecogised please choose again!!!\n");
+        printf("Input not recognised please choose again\n");
         main();
     }
 
